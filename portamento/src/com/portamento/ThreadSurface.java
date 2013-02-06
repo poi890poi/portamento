@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maxphone;
+package com.portamento;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -34,6 +34,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
+import com.portamento.Constants;
 
 /**
  * View that draws, takes keystrokes, etc. for a simple LunarLander game.
@@ -45,11 +46,16 @@ import android.widget.TextView;
  * by the system.
  */
 class ThreadSurface extends SurfaceView implements SurfaceHolder.Callback {
-    class SurfaceControler extends Thread {
+
+    public int mCanvasWidth = -1;
+    public int mCanvasHeight = -1;
+    public float mCanvasWidthInverted = 0;
+    public float mCanvasHeightInverted = 0;
+    
+	class SurfaceControler extends Thread {
         /*
          * Difficulty setting constants
          */
-        public static final int DIFFICULTY_EASY = 0;
         public static final int DIFFICULTY_HARD = 1;
         public static final int DIFFICULTY_MEDIUM = 2;
         
@@ -184,6 +190,11 @@ class ThreadSurface extends SurfaceView implements SurfaceHolder.Callback {
                 mCanvasWidth = width;
                 mCanvasHeight = height;
 
+        		Message msg = Message.obtain();
+        		msg.what = Constants.MSG_SURFACESIZECHANGED;
+        		msg.arg1 = width;
+        		msg.arg2 = height;
+        		mHandler.sendMessage(msg);
                 // don't forget to resize the background image
                 //mBackgroundImage = mBackgroundImage.createScaledBitmap(
                         //mBackgroundImage, width, height, true);
@@ -244,9 +255,15 @@ class ThreadSurface extends SurfaceView implements SurfaceHolder.Callback {
         // create thread only; it's started in surfaceCreated()
         thread = new SurfaceControler(holder, context, new Handler() {
             @Override
-            public void handleMessage(Message m) {
-                mStatusText.setVisibility(m.getData().getInt("viz"));
-                mStatusText.setText(m.getData().getString("text"));
+            public void handleMessage(Message msg) {
+                //mStatusText.setVisibility(m.getData().getInt("viz"));
+                //mStatusText.setText(m.getData().getString("text"));
+            	if (msg.what==Constants.MSG_SURFACESIZECHANGED) {
+            		mCanvasWidth = msg.arg1;
+            		mCanvasHeight = msg.arg2;
+            		mCanvasWidthInverted = 1.0f/mCanvasWidth;
+            		mCanvasHeightInverted = 1.0f/mCanvasHeight;
+            	}
             }
         });
 

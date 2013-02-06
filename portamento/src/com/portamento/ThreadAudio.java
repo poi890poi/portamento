@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package com.maxphone;
+package com.portamento;
 
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.graphics.Canvas;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.AudioFormat;
 import android.util.Log;
 import android.os.Handler;
+import android.os.Message;
+import com.portamento.Constants;
 
 public class ThreadAudio extends Thread {
 	
@@ -30,7 +33,7 @@ public class ThreadAudio extends Thread {
 	
 	long mLastTime = 0;
 	
-	static final int mBufferSz = AudioTrack.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_OUT_MONO , AudioFormat.ENCODING_PCM_8BIT)*3;
+	static final int mBufferSz = AudioTrack.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_8BIT)*3;
 	static final AudioTrack mAudio = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLING_RATE, AudioFormat.CHANNEL_OUT_MONO , AudioFormat.ENCODING_PCM_8BIT,
 			mBufferSz, AudioTrack.MODE_STREAM);
 	static final int mBufferInterval = 1000*mBufferSz/SAMPLING_RATE;
@@ -50,19 +53,35 @@ public class ThreadAudio extends Thread {
 	public ThreadAudio (Handler handler) {
 	
 		setPriority(Thread.MAX_PRIORITY);
-	}
-	
-	@Override
-	public void run(){
+
 		mAudio.write(mSamples, 0, mBufferSz);
         mAudio.play();
+
+	}
+
+	public Handler mHandler;
+
+	@Override
+	public void run() {
+		Looper.prepare();
+		mHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				if (msg.what==Constants.MSG_AUDIOCONTROL) {
+	                // Act on the message
+					Log.w(this.getClass().getName(), "handleMessage, "+String.valueOf(msg.arg1)+", "+String.valueOf(msg.arg2));
+					//mPlay = (boolean)msg.obj;
+					if (msg.arg1==0 && msg.arg2==0) {
+						mPlay = false;
+					} else {
+						mPlay = true;
+					}
+				}
+            }
+		};
        	mHandler.post(mComposeAudio);
+		Looper.loop();		
 	}
 	
-	static final Handler mHandler = new Handler() {
-		
-	};
-
     long elapsed_accum = -1;
     int cycle = 0;
 
@@ -93,8 +112,4 @@ public class ThreadAudio extends Thread {
 	    }
 	};
 	
-    public synchronized void setPlay(boolean play) {
-    	Log.w(this.getClass().getName(), "setPlay, "+String.valueOf(play));
-    	mPlay = play;
-    }
 }

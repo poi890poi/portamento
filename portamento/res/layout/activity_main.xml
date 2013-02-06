@@ -12,7 +12,7 @@
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
 
-    <com.maxphone.ThreadSurface
+    <com.portamento.ThreadSurface
         android:id="@+id/surfaceView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -1,14 +1,18 @@
-package com.maxphone;
+package com.portamento;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.app.Activity;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.util.Log;
 import android.widget.TextView;
-import com.maxphone.ThreadSurface.SurfaceControler;
-import com.maxphone.ThreadAudio;
+
+import com.portamento.R;
+import com.portamento.ThreadAudio;
+import com.portamento.ThreadSurface.SurfaceControler;
+import com.portamento.Constants;
 
 public class MainActivity extends Activity {
 
@@ -58,7 +62,7 @@ public class MainActivity extends Activity {
         super.onPause();
         mSurface.getThread().pause(); // pause game when Activity pauses
     }
-
+    
     @Override
     public boolean onTouchEvent(MotionEvent event) {
     	
@@ -70,10 +74,27 @@ public class MainActivity extends Activity {
     	//Log.w(this.getClass().getName(), String.valueOf(x) + "," + String.valueOf(y) + ", " + String.valueOf(action));
     	
     	if (action==MotionEvent.ACTION_DOWN) {
-    		mAudio.setPlay(true);
+    		Message msg = Message.obtain();
+    		msg.what = Constants.MSG_AUDIOCONTROL;
+    		msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
+    		msg.arg2 = (int)(y*100000*mSurface.mCanvasHeightInverted);
+    		//msg.arg1 = (int)x;
+    		//msg.arg2 = (int)y;
+    		mAudio.mHandler.sendMessage(msg);
+    	}
+    	else if (action==MotionEvent.ACTION_MOVE) {
+    		Message msg = Message.obtain();
+    		msg.what = Constants.MSG_AUDIOCONTROL;
+    		msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
+    		msg.arg2 = (int)(y*100000*mSurface.mCanvasHeightInverted);
+    		mAudio.mHandler.sendMessage(msg);    		
     	}
     	else if (action==MotionEvent.ACTION_UP) {
-    		mAudio.setPlay(false);
+    		Message msg = Message.obtain();
+    		msg.what = Constants.MSG_AUDIOCONTROL;
+    		msg.arg1 = 0;
+    		msg.arg2 = 0;
+    		mAudio.mHandler.sendMessage(msg);
     	}
     	
     	return super.onTouchEvent(event);

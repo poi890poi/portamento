@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package com.maxphone;
+package com.portamento;
 
 public final class R {
     public static final class attr {
