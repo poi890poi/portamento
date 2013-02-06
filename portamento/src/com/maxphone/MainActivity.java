@@ -1,6 +1,7 @@
 package com.maxphone;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.app.Activity;
 import android.view.Menu;
 import android.view.MotionEvent;
@@ -19,6 +20,10 @@ public class MainActivity extends Activity {
 
     private ThreadAudio mAudio;
 
+	static final Handler mHandler = new Handler() {
+		
+	};
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,8 +36,8 @@ public class MainActivity extends Activity {
         // give the LunarView a handle to the TextView used for messages
         mSurface.setTextView((TextView) findViewById(R.id.textView1));
 
-        mAudio = new ThreadAudio();
-        //mAudio.setPriority(Thread.MAX_PRIORITY);
+        mAudio = new ThreadAudio(mHandler);
+		mAudio.start();
 
         /*if (savedInstanceState == null) {
             // we were just launched: set up a new game
@@ -66,7 +71,6 @@ public class MainActivity extends Activity {
     	
     	if (action==MotionEvent.ACTION_DOWN) {
     		mAudio.setPlay(true);
-    		mAudio.run();
     	}
     	else if (action==MotionEvent.ACTION_UP) {
     		mAudio.setPlay(false);

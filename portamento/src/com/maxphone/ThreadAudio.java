@@ -24,14 +24,13 @@ import android.media.AudioFormat;
 import android.util.Log;
 import android.os.Handler;
 
-//public class ThreadAudio extends Thread {
-public class ThreadAudio {
+public class ThreadAudio extends Thread {
 	
 	static final int SAMPLING_RATE = 22050;
 	
 	long mLastTime = 0;
 	
-	static final int mBufferSz = AudioTrack.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_OUT_MONO , AudioFormat.ENCODING_PCM_8BIT)*4;
+	static final int mBufferSz = AudioTrack.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_OUT_MONO , AudioFormat.ENCODING_PCM_8BIT)*3;
 	static final AudioTrack mAudio = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLING_RATE, AudioFormat.CHANNEL_OUT_MONO , AudioFormat.ENCODING_PCM_8BIT,
 			mBufferSz, AudioTrack.MODE_STREAM);
 	static final int mBufferInterval = 1000*mBufferSz/SAMPLING_RATE;
@@ -48,6 +47,18 @@ public class ThreadAudio {
 	static final float mCos = (float)Math.cos(mIncrement);
 	static final float mSin = (float)Math.sin(mIncrement);
 	
+	public ThreadAudio (Handler handler) {
+	
+		setPriority(Thread.MAX_PRIORITY);
+	}
+	
+	@Override
+	public void run(){
+		mAudio.write(mSamples, 0, mBufferSz);
+        mAudio.play();
+       	mHandler.post(mComposeAudio);
+	}
+	
 	static final Handler mHandler = new Handler() {
 		
 	};
@@ -57,56 +68,10 @@ public class ThreadAudio {
 
     final Runnable mComposeAudio = new Runnable()
 	{        
-        public void run_postdelayed() {
-        	long now = System.nanoTime()/1000000;
-    		long elapsed = now-mLastTime;
-
-    		if (elapsed_accum==-1) {
-    			elapsed_accum = 0;
-    		} else {
-	    		elapsed_accum += elapsed;
-	    		cycle++;
-	    		if (cycle>=100) {
-	    			Log.w(this.getClass().getName(), "write audio, "+String.valueOf(elapsed_accum/cycle));
-	    			cycle = 0;
-	    			elapsed_accum = 0;
-	    		}
-    		}
-    		mLastTime = now;
-	    	
-    		if (mPlay) {
-    			mHandler.post(this);
-    		} else {
-    			mAudio.stop();
-    			elapsed_accum = -1;
-    			cycle = 0;
-    		}
-
-	    }
 
 	    public void run() {
-        	/*long now = System.nanoTime()/1000000;
-    		long elapsed = now-mLastTime;
 
-    		if (mLastTime!=0) {
-        		elapsed_accum += elapsed;
-        		cycle++;
-        		if (cycle>=10) {
-        			Log.w(this.getClass().getName(), "write audio, "+String.valueOf(mBufferInterval)+", "+String.valueOf(elapsed_accum/cycle));
-        			cycle = 0;
-        			elapsed_accum = 0;
-        		}    			
-    		}*/
-    		
-    		//int targetlen = mBufferSz/2;
-    		    		
-    		//if (elapsed*SAMPLING_RATE/1000 >= targetlen) {
-    		if (true) {
-    			//targetlen = (int)(elapsed*SAMPLING_RATE/1000);
-    			//targetlen = mBufferSz;
-    			//if (targetlen>mBufferSz) targetlen = mBufferSz;
-    			//float frequency = 261.626f;
-	            //float increment = (float)(2*Math.PI)*frequency/SAMPLING_RATE; 
+	    	if (mPlay) {
 	            for (int i=0; i < mBufferSz; i++) {
 	            	mSamples[i] = (byte)mVectorX;
 	            	float x = mVectorX;
@@ -114,58 +79,20 @@ public class ThreadAudio {
 	            	mVectorX = x*mCos-y*mSin;
 	            	mVectorY = x*mSin+y*mCos;
 	            }
-	            
-	            //Log.w(this.getClass().getName(), "write audio, "+String.valueOf(mBufferInterval)+", "+String.valueOf(elapsed));
-	            mAudio.write(mSamples, 0, mBufferSz);
-	
-	            //mLastTime = now;
-    		}
+	    	} else {
+	            for (int i=0; i < mBufferSz; i++) {
+	            	mSamples[i] = 0;
+	            }
+	    	}
+            
+            //Log.w(this.getClass().getName(), "write audio, "+String.valueOf(mBufferInterval)+", "+String.valueOf(elapsed));
+            mAudio.write(mSamples, 0, mBufferSz);
 
-    		if (mPlay) {
-    			mHandler.postDelayed(this, 6);
-    		} else {
-    			mAudio.flush();
-    			mAudio.stop();
-    			mLastTime = 0;
-    			cycle = 0;
-    		}
+   			mHandler.postDelayed(this, 6);
     		
 	    }
 	};
-
 	
-	
-    //@Override
-    public void run() {
-    	mLastTime = 0;
-        mAudio.play();
-       	mHandler.post(mComposeAudio);
-    }
-
-    //@Override
-    public void run_loop() { // For performance testing only
-    	/*while (true) {
-	        try {
-	        	long now = System.nanoTime()/1000000;
-	    		long elapsed = now - mLastTime;
-
-	    		if (mLastTime!=0) {
-		    		elapsed_accum += elapsed;
-		    		cycle++;
-		    		if (cycle>=100) {
-		    			Log.w(this.getClass().getName(), "write audio, "+String.valueOf(elapsed_accum/cycle));
-		    			cycle = 0;
-		    			elapsed_accum = 0;
-		    		}
-	    		}
-	    		mLastTime = now;
-	            sleep(20);
-	        } catch (InterruptedException e) {
-	        	
-	        }
-    	}*/
-    }
-
     public synchronized void setPlay(boolean play) {
     	Log.w(this.getClass().getName(), "setPlay, "+String.valueOf(play));
     	mPlay = play;
