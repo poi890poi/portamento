@@ -191,10 +191,13 @@ public class ThreadAudio extends Thread {
 						mTargetFrequency = -1;
 					} else {
 						mTargetFrequency = msg.arg2;
+						if (mTargetFrequency<0) mTargetFrequency = 0;
+						else if (mTargetFrequency>Constants.FREQUENCY_DELTA) mTargetFrequency = Constants.FREQUENCY_DELTA;
 					}
 					mDt = msg.arg1*SAMPLING_RATE/1000; // Convert elapsed time from millisecond to sample count
 					mDf = mTargetFrequency-mLastTargetFreq;
-					Log.w(this.getClass().getName(), "ACTION_MOVE, "+String.valueOf(mDt)+", "+String.valueOf(mDf));
+	    			Log.w(this.getClass().getName(), "ACTION_MOVE, dt="+String.valueOf(mDt)+", f="+String.valueOf(mFrequency)+" -> "+String.valueOf(mTargetFrequency));
+					//Log.w(this.getClass().getName(), "ACTION_MOVE, "+String.valueOf(mDt)+", "+String.valueOf(mDf));
 					mLastTargetFreq = mTargetFrequency;
 				} else if (msg.what==MotionEvent.ACTION_UP) {
 					mTargetFrequency = -1;
