@@ -63,6 +63,8 @@ public class MainActivity extends Activity {
         mSurface.getThread().pause(); // pause game when Activity pauses
     }
     
+    private long mLastTouchEvent = 0;
+    
     @Override
     public boolean onTouchEvent(MotionEvent event) {
     	
@@ -74,26 +76,34 @@ public class MainActivity extends Activity {
     	//Log.w(this.getClass().getName(), String.valueOf(x) + "," + String.valueOf(y) + ", " + String.valueOf(action));
     	
     	if (action==MotionEvent.ACTION_DOWN) {
+    		Log.w(this.getClass().getName(), "ACTION_DOWN, "+String.valueOf(event.getEventTime()));
     		Message msg = Message.obtain();
-    		msg.what = Constants.MSG_AUDIOCONTROL;
-    		msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
-    		msg.arg2 = (int)(y*100000*mSurface.mCanvasHeightInverted);
-    		//msg.arg1 = (int)x;
-    		//msg.arg2 = (int)y;
+    		msg.what = MotionEvent.ACTION_DOWN;
+    		//msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
+    		msg.arg1 = 0;
+    		msg.arg2 = (int)((mSurface.mCanvasHeight-y)*Constants.FREQUENCY_DELTA*mSurface.mCanvasHeightInverted);
+    		mLastTouchEvent = event.getEventTime();
     		mAudio.mHandler.sendMessage(msg);
     	}
     	else if (action==MotionEvent.ACTION_MOVE) {
-    		Message msg = Message.obtain();
-    		msg.what = Constants.MSG_AUDIOCONTROL;
-    		msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
-    		msg.arg2 = (int)(y*100000*mSurface.mCanvasHeightInverted);
+    		//Log.w(this.getClass().getName(), "ACTION_MOVE, "+String.valueOf(event.getEventTime()));
+    	    Message msg = Message.obtain();
+    		msg.what = MotionEvent.ACTION_MOVE;
+    		//msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
+    		if (mLastTouchEvent!=0) msg.arg1 = (int)(event.getEventTime()-mLastTouchEvent);
+    		else msg.arg1 = 0;
+    		msg.arg2 = (int)((mSurface.mCanvasHeight-y)*Constants.FREQUENCY_DELTA*mSurface.mCanvasHeightInverted);
+    		mLastTouchEvent = event.getEventTime();
     		mAudio.mHandler.sendMessage(msg);    		
     	}
     	else if (action==MotionEvent.ACTION_UP) {
+    		Log.w(this.getClass().getName(), "ACTION_UP, "+String.valueOf(event.getEventTime()));
     		Message msg = Message.obtain();
-    		msg.what = Constants.MSG_AUDIOCONTROL;
-    		msg.arg1 = 0;
+    		msg.what = MotionEvent.ACTION_UP;
+    		if (mLastTouchEvent!=0) msg.arg1 = (int)(event.getEventTime()-mLastTouchEvent);
+    		else msg.arg1 = 0;
     		msg.arg2 = 0;
+    		mLastTouchEvent = 0;
     		mAudio.mHandler.sendMessage(msg);
     	}
     	
