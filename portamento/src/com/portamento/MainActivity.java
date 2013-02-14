@@ -81,7 +81,7 @@ public class MainActivity extends Activity {
     		msg.what = MotionEvent.ACTION_DOWN;
     		//msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
     		msg.arg1 = 0;
-    		msg.arg2 = (int)((mSurface.mCanvasHeight-y)*Constants.FREQUENCY_DELTA*mSurface.mCanvasHeightInverted);
+    		msg.arg2 = (int)((mSurface.mCanvasHeight-y)*Constants.FREQUENCY_DELTA*mSurface.mCanvasHeightInverted+Constants.FREQUENCY_LOW);
     		mLastTouchEvent = event.getEventTime();
     		mAudio.mHandler.sendMessage(msg);
     	}
@@ -92,7 +92,7 @@ public class MainActivity extends Activity {
     		//msg.arg1 = (int)(x*100000*mSurface.mCanvasWidthInverted);
     		if (mLastTouchEvent!=0) msg.arg1 = (int)(event.getEventTime()-mLastTouchEvent);
     		else msg.arg1 = 0;
-    		msg.arg2 = (int)((mSurface.mCanvasHeight-y)*Constants.FREQUENCY_DELTA*mSurface.mCanvasHeightInverted);
+    		msg.arg2 = (int)((mSurface.mCanvasHeight-y)*Constants.FREQUENCY_DELTA*mSurface.mCanvasHeightInverted+Constants.FREQUENCY_LOW);
     		mLastTouchEvent = event.getEventTime();
     		mAudio.mHandler.sendMessage(msg);    		
     	}
@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
     		msg.what = MotionEvent.ACTION_UP;
     		if (mLastTouchEvent!=0) msg.arg1 = (int)(event.getEventTime()-mLastTouchEvent);
     		else msg.arg1 = 0;
-    		msg.arg2 = 0;
+    		msg.arg2 = (int)((mSurface.mCanvasHeight-y)*Constants.FREQUENCY_DELTA*mSurface.mCanvasHeightInverted+Constants.FREQUENCY_LOW);
     		mLastTouchEvent = 0;
     		mAudio.mHandler.sendMessage(msg);
     	}
